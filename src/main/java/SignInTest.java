@@ -1,41 +1,52 @@
 import org.apache.log4j.Logger;
-import org.openqa.selenium.By;
 import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.support.FindBy;
+import org.openqa.selenium.support.PageFactory;
 import org.testng.Assert;
 import org.testng.annotations.Test;
 
-import com.codingground.exception.DriverIntializationException;
-import com.codinground.utility.Driver;
+import com.codinground.utility.DriverUtils;
+import com.codinground.utility.TBrowser;
 
 public class SignInTest {
 
-	WebDriver driver = new ChromeDriver();
 	final static Logger logger = Logger.getLogger(SignInTest.class);
+
+	@FindBy(linkText = "Your trips")
+	private WebElement yourTrips;
+
+	@FindBy(id = "SignIn")
+	private WebElement signIn;
+
+	@FindBy(id = "signInButton")
+	private WebElement signInBtn;
+
+	@FindBy(id = "errors1")
+	private WebElement error;
 
 	@Test
 	public void shouldThrowAnErrorIfSignInDetailsAreMissing() {
 		try {
+			TBrowser browser = TBrowser.getInstance();
+			WebDriver driver = browser.launchUrl("https://www.cleartrip.com/");
+			PageFactory.initElements(driver, this);
 			logger.debug("Entering in  shouldThrowAnErrorIfSignInDetailsAreMissing method");
-			Driver.setDriverPath();
-			driver.manage().window().maximize();
-			driver.get("https://www.cleartrip.com/");
-			logger.info("Entering in  shouldThrowAnErrorIfSignInDetailsAreMissing method");
-			Driver.waitFor(2000);
+			DriverUtils utils = new DriverUtils(driver);
 
-			driver.findElement(By.linkText("Your trips")).click();
-			driver.findElement(By.id("SignIn")).click();
-
-			Driver.waitFor(2000);
+			utils.waitFor(2000);
+			yourTrips.click();
+			logger.debug("Clicked on YourTrips button.");
+			signIn.click();
+			logger.debug("Clicked on SignIn button.");
+			utils.waitFor(2000);
 			driver.switchTo().frame("modal_window");
-
-			driver.findElement(By.id("signInButton")).click();
-
-			String errors1 = driver.findElement(By.id("errors1")).getText();
+			logger.debug("Clicking on SignIn button without filling any details.");
+			signInBtn.click();
+			String errors1 = error.getText();
 			Assert.assertTrue(errors1.contains("There were errors in your submission"));
-			driver.quit();
-		} catch (DriverIntializationException ex) {
-			logger.error("Exception accured ,root cause:: " + ex.getMessage());
+			logger.debug("TestCase-shouldThrowAnErrorIfSignInDetailsAreMissing passed.");
+
 		} catch (InterruptedException exception) {
 			logger.error("Intruppted accured ,root cause:: " + exception.getMessage());
 		} catch (Exception e) {
@@ -43,5 +54,4 @@ public class SignInTest {
 		}
 
 	}
-
 }
